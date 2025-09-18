@@ -61,13 +61,13 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
     epochs=args.epochs
 
     if args.optimizer=='SGD':
-            optimizer=SGD(model.parameters(),lr=args.lr,momentum=0.9,nesterov=False)
+            optimizer=SGD(model.parameters(),lr=args.lr,momentum=0.9,nesterov=False,weight_decay=args.weight_decay)
     elif args.optimizer=='AdamW':
-            optimizer=AdamW(model.parameters(),lr=args.lr)
+            optimizer=AdamW(model.parameters(),lr=args.lr,weight_decay=args.weight_decay)
     elif args.optimizer=='Adam':
-            optimizer=Adam(model.parameters(),lr=args.lr)
+            optimizer=Adam(model.parameters(),lr=args.lr,weight_decay=args.weight_decay)
     elif args.optimizer=='RMSprop':
-            optimizer=RMSprop(model.parameters(),lr=args.lr)
+            optimizer=RMSprop(model.parameters(),lr=args.lr,weight_decay=args.weight_decay)
     else:
         raise NameError('Optimizer '+str(args.optimizer)+' not supported!')
     
