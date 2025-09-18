@@ -62,7 +62,7 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
 
     nodecay=[]
     decay=[]
-    for n,p in model.named_parameters:
+    for n,p in model.named_parameters():
         if 'alpha' or 'beta' in n:
             nodecay.append(p)
         else:
