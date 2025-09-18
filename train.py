@@ -60,14 +60,24 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
     
     epochs=args.epochs
 
+    nodecay=[]
+    decay=[]
+    for n,p in model.named_parameters:
+        if 'alpha' or 'beta' in n:
+            nodecay.append(p)
+        else:
+            decay.append(p)
+
+    parameters=[{'params':nodecay,'weight_decay':0},{'params':decay}]
+
     if args.optimizer=='SGD':
-            optimizer=SGD(model.parameters(),lr=args.lr,momentum=0.9,nesterov=False,weight_decay=args.weight_decay)
+            optimizer=SGD(parameters,lr=args.lr,momentum=0.9,nesterov=False,weight_decay=args.weight_decay)
     elif args.optimizer=='AdamW':
-            optimizer=AdamW(model.parameters(),lr=args.lr,weight_decay=args.weight_decay)
+            optimizer=AdamW(parameters,lr=args.lr,weight_decay=args.weight_decay)
     elif args.optimizer=='Adam':
-            optimizer=Adam(model.parameters(),lr=args.lr,weight_decay=args.weight_decay)
+            optimizer=Adam(parameters,lr=args.lr,weight_decay=args.weight_decay)
     elif args.optimizer=='RMSprop':
-            optimizer=RMSprop(model.parameters(),lr=args.lr,weight_decay=args.weight_decay)
+            optimizer=RMSprop(parameters,lr=args.lr,weight_decay=args.weight_decay)
     else:
         raise NameError('Optimizer '+str(args.optimizer)+' not supported!')
     
