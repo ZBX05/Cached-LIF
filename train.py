@@ -113,20 +113,6 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
         tet_lambda=args.loss_lambda
         tet_means=args.loss_means
     
-    observe_fi=False
-    if args.observe_fi:
-        observe_fi=True
-        fi_epochs=[int(tic_epoch) for tic_epoch in args.fi_epochs.split('-')]
-    
-    observe_ic=False
-    if args.observe_ic:
-        observe_ic=True
-    
-    if args.mean_reduce:
-        get_backward_loss=lambda loss:loss.mean()
-    else:
-        get_backward_loss=lambda loss:loss
-    
     save_checkpoint=False
     if args.save_checkpoint:
         save_checkpoint=True
@@ -155,6 +141,7 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
         model.train()
         train_loss=0
         train_acc=0
+        train_loss_all=0
         train_samples=0
         for img,labels in tqdm(train_data_loader):
             img=img.to(device)
@@ -173,7 +160,6 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
                         output=model(img)
                         loss=criterion(output,labels)
 
-                    loss=get_backward_loss(loss)
                     scaler.scale(loss).backward()
                     scaler.step(optimizer)
                     scaler.update()
@@ -189,14 +175,14 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
                     output=model(img)
                     loss=criterion(output,labels)
                 
-                loss=get_backward_loss(loss)
                 loss.backward()
                 optimizer.step()
             train_samples+=labels.size(0)
             train_loss+=loss.item()*labels.size(0)
+            train_loss_all+=loss.item()
 
             train_acc+=(output.argmax(1)==labels).float().sum().item()
-        test_loss,test_acc=evaluate(model,test_data_loader,criterion,device)
+        test_loss,test_loss_all,test_acc=evaluate(model,test_data_loader,criterion,device)
         if test_acc>best_test_acc or (test_acc==best_test_acc and test_loss<best_test_loss):
             best_test_acc=test_acc
             best_test_loss=test_loss
@@ -207,12 +193,6 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
             param=args.surrogate_param
             torch.save(model.cpu().state_dict(),
                         result_weight_path+f'/{first_str}_{args.surrogate_type}{param}_{epoch+1}_{test_loss}_{test_acc}.pth')
-            model.to(device)
-        if observe_ic:
-            IC_Observation(model,train_data_loader,epoch,args.T,device,logging,writer)
-        if observe_fi and epoch+1 in fi_epochs:
-            torch.save(model.cpu().state_dict(),
-                       result_weight_path+f'/FI_{first_str}_{epoch+1}.pth')
             model.to(device)
         if save_checkpoint and epoch+1 in checkpoint_epochs:
             torch.save({
@@ -231,11 +211,13 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
         train_loss_list.append(train_loss)
         test_acc_list.append(test_acc)
         test_loss_list.append(test_loss)
-        tags=['train_loss','train_acc','test_loss','test_acc']
+        tags=['train_loss','train_acc','test_loss','test_acc','train_loss_all','test_loss_all']
         writer.add_scalar(tags[0],train_loss,epoch+1)
         writer.add_scalar(tags[1],train_acc,epoch+1)
         writer.add_scalar(tags[2],test_loss,epoch+1)
         writer.add_scalar(tags[3],test_acc,epoch+1)
+        writer.add_scalar(tags[4],train_loss_all,epoch+1)
+        writer.add_scalar(tags[5],test_loss_all,epoch+1)
         print('Epoch {:3d}: Train loss: {:4f} | Train acc: {:3f} | Test loss: {:4f} | Test acc: {:3f}'
               .format(epoch+1,train_loss,train_acc,test_loss,test_acc))
         logging.info('Epoch {:3d}: Train loss: {:4f} | Train acc: {:3f} | Test loss: {:4f} | Test acc: {:3f}'
@@ -244,10 +226,6 @@ def train(args:Namespace,model:torch.nn.Module,train_data_loader:DataLoader,test
     logging.info(f'Best test accuracy: {best_test_acc} at epoch {best_epoch}')
     # pd.DataFrame({"train_loss":train_loss_list,"test_loss":test_loss_list,"train_acc":train_acc_list,"test_acc":test_acc_list}).to_csv(
     #     experiment_path+'/result/curve.csv')
-    if observe_fi:
-        for epoch in fi_epochs:
-            model.load_state_dict(torch.load(result_weight_path+f'/FI_{first_str}_{epoch}.pth'))
-            FI_Observation(model,train_data_loader,epoch,args.T,device,logging,writer)
     writer.close()
 
 def evaluate(model:torch.nn.Module,test_data_loader:DataLoader,criterion:Any,device:torch.device) -> tuple:
@@ -255,6 +233,7 @@ def evaluate(model:torch.nn.Module,test_data_loader:DataLoader,criterion:Any,dev
     test_loss=0
     test_acc=0
     test_samples=0
+    test_loss_all=0
     model.to(device)
     with torch.no_grad():
         for img,labels in tqdm(test_data_loader):
@@ -266,7 +245,8 @@ def evaluate(model:torch.nn.Module,test_data_loader:DataLoader,criterion:Any,dev
 
             test_samples+=labels.size(0)
             test_loss+=loss.item()*labels.size(0)
+            test_loss_all+=loss.item()
 
             test_acc+=(output.argmax(1)==labels).float().sum().item()
     
-    return test_loss/test_samples,test_acc/test_samples
+    return test_loss/test_samples,test_loss_all,test_acc/test_samples
