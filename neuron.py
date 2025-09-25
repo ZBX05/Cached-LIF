@@ -59,11 +59,12 @@ class LIFNode(BaseNode):
         self.reset()
         T=X.shape[1]
         for t in range(T):
-            self.mem=self.mem*(1-1/(self.tau))+X[:,t,...]
+            self.mem=self.mem*(1-1/self.tau)+X[:,t,...]
             spike=self.activate_function(self.mem-self.v_threshold,self.surrogate_type,self.surrogate_param)
-            self.mem=self.mem-(self.v_threshold+self.cache)*spike
+            self.cache=self.cache/(self.tau)+(1-spike)*torch.sigmoid(self.mem)
+            self.mem=self.mem-self.v_threshold*spike+(1-spike)*torch.tanh(self.cache)
+            # self.mem=self.mem-self.v_threshold*spike+*torch.tanh(self.cache)
             self.spike_pot.append(spike)
-            self.cache=self.cache/(self.tau)+torch.tanh(spike+self.mem)
             # self.cache=self.get_param(self.beta)*self.cache+(1-spike)
         return torch.stack(self.spike_pot,dim=1)
     
