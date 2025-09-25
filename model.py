@@ -56,8 +56,6 @@ class SNN(nn.Module):
                             v_threshold=v_threshold,
                             v_reset=v_reset,
                             tau=tau,
-                            alpha=nn.Parameter(nn.Parameter(torch.tensor([alpha]),requires_grad=True)) if parameterize else alpha,
-                            beta=nn.Parameter(nn.Parameter(torch.tensor([beta]),requires_grad=True)) if parameterize else beta,
                             surrogate_type=surrogate_type,
                             surrogate_param=surrogate_param
                         ))
@@ -74,8 +72,6 @@ class SNN(nn.Module):
                             v_threshold=v_threshold,
                             v_reset=v_reset,
                             tau=tau,
-                            alpha=nn.Parameter(nn.Parameter(torch.tensor([alpha]),requires_grad=True)) if parameterize else alpha,
-                            beta=nn.Parameter(nn.Parameter(torch.tensor([beta]),requires_grad=True)) if parameterize else beta,
                             surrogate_type=surrogate_type,
                             surrogate_param=surrogate_param
                         ))
@@ -95,8 +91,6 @@ class SNN(nn.Module):
                             v_threshold=v_threshold,
                             v_reset=v_reset,
                             tau=tau,
-                            alpha=nn.Parameter(nn.Parameter(torch.tensor([alpha]),requires_grad=True)) if parameterize else alpha,
-                            beta=nn.Parameter(nn.Parameter(torch.tensor([beta]),requires_grad=True)) if parameterize else beta,
                             surrogate_type=surrogate_type,
                             surrogate_param=surrogate_param
                         ))
@@ -117,8 +111,6 @@ class SNN(nn.Module):
                             v_threshold=v_threshold,
                             v_reset=v_reset,
                             tau=tau,
-                            alpha=nn.Parameter(nn.Parameter(torch.tensor([alpha]),requires_grad=True)) if parameterize else alpha,
-                            beta=nn.Parameter(nn.Parameter(torch.tensor([beta]),requires_grad=True)) if parameterize else beta,
                             surrogate_type=surrogate_type,
                             surrogate_param=surrogate_param
                         ))
@@ -154,8 +146,6 @@ class SNN(nn.Module):
                             v_threshold=v_threshold,
                             v_reset=v_reset,
                             tau=tau,
-                            alpha=nn.Parameter(nn.Parameter(torch.tensor([alpha]),requires_grad=True)) if parameterize else alpha,
-                            beta=nn.Parameter(nn.Parameter(torch.tensor([beta]),requires_grad=True)) if parameterize else beta,
                             surrogate_type=surrogate_type,
                             surrogate_param=surrogate_param
                         ))
@@ -176,8 +166,6 @@ class SNN(nn.Module):
                             v_threshold=v_threshold,
                             v_reset=v_reset,
                             tau=tau,
-                            alpha=nn.Parameter(nn.Parameter(torch.tensor([alpha]),requires_grad=True)) if parameterize else alpha,
-                            beta=nn.Parameter(nn.Parameter(torch.tensor([beta]),requires_grad=True)) if parameterize else beta,
                             surrogate_type=surrogate_type,
                             surrogate_param=surrogate_param
                         ))
@@ -202,8 +190,6 @@ class SNN(nn.Module):
                             v_threshold=v_threshold,
                             v_reset=v_reset,
                             tau=tau,
-                            alpha=nn.Parameter(nn.Parameter(torch.tensor([alpha]),requires_grad=True)) if parameterize else alpha,
-                            beta=nn.Parameter(nn.Parameter(torch.tensor([beta])),requires_grad=True) if parameterize else beta,
                             surrogate_type=surrogate_type,
                             surrogate_param=surrogate_param
                         ))
